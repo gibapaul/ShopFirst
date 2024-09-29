@@ -56,10 +56,13 @@ var userSchema = new mongoose.Schema({
 });
 userSchema.pre('save', async function(next){
     if (!this.isModified('password')) return next(); // Chỉ băm nếu mật khẩu đã thay đổi
-    const salt = await bcrypt.genSalt(10); // Sử dụng hàm bất đồng bộ
+    const salt = await bcrypt.genSaltSync(10); // Sử dụng hàm bất đồng bộ
     this.password = await bcrypt.hash(this.password, salt);
-    next(); // Tiến tới bước tiếp theo
 })
-
+userSchema.methods = {
+    isCorrectPassword: async function (password) {
+        return await bcrypt.compare(password, this.password )
+    }
+}
 //Export the model
 module.exports = mongoose.model('User', userSchema);

@@ -4,7 +4,7 @@ const dbConnect = require('./config/dbconnect');
 const initRoutes = require('./routes');
 
 const app = express();
-const port = process.env.PORT || 8888;
+const port = process.env.PORT || 5000;
 
 // In giá trị của MONGODB_URI
 console.log('MONGODB_URI:', process.env.MONGODB_URI);
