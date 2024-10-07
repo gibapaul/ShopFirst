@@ -13,7 +13,6 @@ const register = asyncHandler(async (req, res) => {
             sucess: false,
             mes: 'Missing inputs'
         })
-
     const user = await User.findOne({ email })
     if (user) throw new Error('User has existed')
     else {
@@ -98,7 +97,6 @@ const logout = asyncHandler(async (req, res) => {
 // Client gửi api kèm token
 // Check token có giống với token mà server gửi mail hay không
 // Change password
-
 const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.query
     if (!email) throw new Error('Missing email')
@@ -180,6 +178,36 @@ const updateUserAddress = asyncHandler(async (req, res) => {
         updatedUser: response ? response : 'Some thing went wrong'
     })
 })
+const updateCart = asyncHandler(async (req, res) => {
+    const { _id } = req.user
+    const { pid, quantity, color} = req.body
+    if (!pid || !quantity || ! color) throw new Error('Missing inputs')
+    const user = await User.findById(_id).select('cart')
+    const alreadyProduct = user?.cart?.find(el => el.product.toString() === pid)
+    if(alreadyProduct) {
+        if(alreadyProduct.color === color) {
+            const response = await User.updateOne({cart: {$elemMatch: alreadyProduct}}, {$set: {"cart.$.quantity": quantity}}, {new: true})
+            return res.status(200).json({
+                success: response ? true : false,
+                updatedUser: response ? response : 'Some thing went wrong'
+        
+            })
+        } else {
+            const response = await User.findByIdAndUpdate(_id, {$push: {cart: {product: pid, quantity, color}}}, {new:true})
+            return res.status(200).json({
+                success: response ? true : false,
+                updatedUser: response ? response : 'Some thing went wrong'
+        
+            })
+        }
+    }else{
+        const response = await User.findByIdAndUpdate(_id, {$push: {cart: {product: pid, quantity, color}}}, {new:true})
+    return res.status(200).json({
+        success: response ? true : false,
+        updatedUser: response ? response : 'Some thing went wrong'
+    })
+}
+})
 module.exports = {
     register,
     login,
@@ -193,5 +221,7 @@ module.exports = {
     updateUser,
     updateUserByAdmin,
     updateUserAddress,
+    updateCart,
+
 
 }

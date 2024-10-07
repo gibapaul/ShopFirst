@@ -37,7 +37,6 @@ const updateCoupon = asyncHandler(async (req, res) => {
         success: true,
         updatedBlog: response
     });
-   
 }); const deleteCoupon = asyncHandler(async(req, res) => {
         const {cid} = req.params
         const response = await Coupon.findByIdAndDelete(cid)

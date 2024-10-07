@@ -138,6 +138,7 @@ const uploadImagesProduct = asyncHandler(async(req, res) => {
     })
 })
 
+
 module.exports = {
     createProduct,
     getProduct,
@@ -146,5 +147,5 @@ module.exports = {
     deleteProduct,
     ratings,
     uploadImagesProduct,
-    
+
 }
