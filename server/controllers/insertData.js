@@ -32,6 +32,8 @@ const fn = async (product) => {
             sold: Math.round(Math.random() * 100),
             images: product?.images,
             color: color, // Sử dụng color đã kiểm tra
+            thumb: product?.thumb,
+            totalRatings: Math.round(Math.random()*5)
         });
     } catch (error) {
         if (error.code === 11000) {

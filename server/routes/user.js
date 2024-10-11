@@ -18,7 +18,6 @@ router.put('/cart/:uid', [verifyAccessToken], ctrls.updateCart)
 
 module.exports = router
 
-
 // CRUD | Create - Read - Update - Delete | POST - GET - PUT - DELETEeee
 // CREATE (POST) + PUT - body
 // GET + DELETE - query // ?fdfdsf&fdfs
