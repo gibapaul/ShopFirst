@@ -5,6 +5,9 @@ import labelGreen from '../assets/label-green.png'
 import { renderStartFromNumber } from '../ultils/helpers'
 import SelectOption from './SelectOption'
 import icons from '../ultils/icons'
+import { Link } from 'react-router-dom'
+import path from '../ultils/path'
+
 
 const {
     AiFillEye,
@@ -16,8 +19,9 @@ const Product = ({ productData, isNew }) => {
 
     return (
         <div className='w-full text-base px-[10px]'>
-            <div 
-                className='w-full border p-[15px] flex flex-col items-center relative'
+            <Link 
+                className='w-full border p-[15px] flex flex-col items-center'
+                to={`/${path.DETAIL_PRODUCT}/${productData?._id}/${productData?.title}`}
                 onMouseEnter={(e) => {
                     e.stopPropagation()
                     setIsShowOption(true)
@@ -27,7 +31,7 @@ const Product = ({ productData, isNew }) => {
                     setIsShowOption(false)
                 }}
             >
-                <div className='relative w-full relative'>
+                <div className='w-full relative'>
                     
                     {isShowOption && (
                         <div className='absolute bottom-[-10px] left-0 right-0 flex justify-center gap-2 animate-slide-top'>
@@ -66,11 +70,11 @@ const Product = ({ productData, isNew }) => {
                     <span className='flex h-4'>{renderStartFromNumber(productData?.totalRatings)?.map((el, index) => (
                     <span key={index}> {el} </span>
                 ))}</span>
-                    
+                
                     {/* Giá sản phẩm */}
                     <span>{`${formatMoney(productData?.price)} VNĐ`}</span>
                 </div>
-            </div>
+            </Link>
         </div>
     )
 }

@@ -5,7 +5,7 @@ const Banner = () => {
     return (
         <div className='w-full'>
             <img 
-            src='https://digital-world-2.myshopify.com/cdn/shop/files/slideshow3-home2_1920x.jpg?v=1613166679'
+            src='https://static.minhtuanmobile.com/uploads/editer/images/2023/05/smartphone-anh-huong-nhu-the-nao-den-nao-bo-cua-chung-ta-01.webp'
             alt='banner'
             className='h-[400px] w-full object-cover'
             />
