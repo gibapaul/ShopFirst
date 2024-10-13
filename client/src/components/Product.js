@@ -22,7 +22,7 @@ const Product = ({ productData, isNew }) => {
                     e.stopPropagation()
                     setIsShowOption(true)
                 }}
-                onMouseLeave={(e) => { // Sửa onMouseLeaver thành onMouseLeave
+                onMouseLeave={(e) => { 
                     e.stopPropagation()
                     setIsShowOption(false)
                 }}
@@ -63,7 +63,9 @@ const Product = ({ productData, isNew }) => {
                     <span className='line-clamp-1'>{productData?.title}</span>
                     
                     {/* Đánh giá sao */}
-                    <span className='flex h-4'>{renderStartFromNumber(productData?.totalRatings)}</span>
+                    <span className='flex h-4'>{renderStartFromNumber(productData?.totalRatings)?.map((el, index) => (
+                    <span key={index}> {el} </span>
+                ))}</span>
                     
                     {/* Giá sản phẩm */}
                     <span>{`${formatMoney(productData?.price)} VNĐ`}</span>

@@ -3,7 +3,7 @@ import { MdEmail } from "react-icons/md";
 import { BsHandbagFill, BsFillSuitHeartFill } from "react-icons/bs";
 import { FaUserCircle } from "react-icons/fa";
 import { AiFillHome, AiFillStar, AiOutlineStar, AiFillEye, AiOutlineMenu } from "react-icons/ai";
-
+import {IoIosArrowForward} from "react-icons/io";
 
 const icon = {
     RiPhoneFill,
@@ -16,6 +16,7 @@ const icon = {
     AiFillEye,
     BsFillSuitHeartFill,
     AiOutlineMenu,
+    IoIosArrowForward,
     
 
 
