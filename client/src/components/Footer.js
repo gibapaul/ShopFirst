@@ -31,7 +31,7 @@ const Footer = () => {
             <h3 className='mb-[20px] text-[15px] font-medium border-l-2 border-main pl-[15px]'>ABOUT US</h3>
             <span>
             <span>Address: </span>
-            <span className='opacity-70'>474 Ontario St Toronto, ON M4X 1M7 Canada</span>
+            <span className='opacity-70'>Tan Long B, Tan Tien, Dam Doi, Ca Mau</span>
             </span>
             <span>
             <span> Phone: </span>
@@ -39,7 +39,7 @@ const Footer = () => {
             </span>
             <span>
             <span>Mail: </span>
-            <span className='opacity-70'>tadathemes@gmail.com</span>
+            <span className='opacity-70'>trinhgiabao@gmail.com</span>
             </span>
           </div>
           <div className='flex-1 flex flex-col gap-2'>
