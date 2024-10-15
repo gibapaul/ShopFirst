@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const sendMail = require('../ultils/sendMail');
 const crypto = require('crypto');
 const makeToken = require('uniqid');
+const bcrypt = require('bcrypt');
 
 const register = asyncHandler(async (req, res) => {
     const { email, password, firstname, lastname, mobile } = req.body;
@@ -30,7 +31,7 @@ const register = asyncHandler(async (req, res) => {
     const token = makeToken();
 
     // Thiết lập cookie
-    res.cookie('dataregister', { email, firstname, lastname, mobile, token }, {
+    res.cookie('dataregister', { email, firstname, lastname, mobile, password, token }, {
         httpOnly: true,
         maxAge: 15 * 60 * 1000 // 15 phút
     });
@@ -50,18 +51,23 @@ const finalregister = asyncHandler(async (req, res) => {
     const cookie = req.cookies;
     const { token } = req.params;
 
-    if (!cookie || !cookie.dataregister || cookie.dataregister.token !== token) return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`)
+    if (!cookie || !cookie.dataregister || cookie.dataregister?.token !== token) {
+        res.clearCookie('dataregister')
+        return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
+     
+    }
+    const hashedPassword = await bcrypt.hash(cookie.dataregister.password, 10);
 
     const newUser = await User.create({
-        email: cookie.dataregister.email,
-        password: cookie.dataregister.password, 
-        mobile: cookie.dataregister.mobile,
-        firstname: cookie.dataregister.firstname,
-        lastname: cookie.dataregister.lastname,
+        email: cookie?.dataregister?.email,
+        password: cookie?.dataregister?.password, // Sử dụng mật khẩu đã mã hóa
+        mobile: cookie?.dataregister?.mobile,
+        firstname: cookie?.dataregister?.firstname,
+        lastname: cookie?.dataregister?.lastname,
     });
-
-    if(newUser) return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`)
-        else return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`)
+    res.clearCookie('dataregister')
+    if (newUser) return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`);
+    else return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
 });
 // Refresh token => Cấp mới access token
 // Access token => Xác thực người dùng, quân quyên người dùng
@@ -138,14 +144,15 @@ const logout = asyncHandler(async (req, res) => {
 // Check token có giống với token mà server gửi mail hay không
 // Change password
 const forgotPassword = asyncHandler(async (req, res) => {
-    const { email } = req.query
+    const { email } = req.body
     if (!email) throw new Error('Missing email')
     const user = await User.findOne({ email })
     if (!user) throw new Error('User not found')
     const resetToken = user.createPasswordChangedToken()
     await user.save()
 
-    const html = `Xin vui lòng click vào link dưới đây để thay đổi mật khẩu của bạn.Link này sẽ hết hạn sau 15 phút kể từ bây giờ. <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>Click here</a>`
+    const html = `Xin vui lòng click vào link dưới đây để thay đổi mật khẩu của bạn.Link này sẽ hết hạn sau 15 phút kể từ bây giờ. 
+    <a href=${process.env.CLIENT_URL}/reset-password/${resetToken}>Click here</a>`
 
     const data = {
         email,
@@ -154,8 +161,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
     }
     const rs = await sendMail(data)
     return res.status(200).json({
-        success: true,
-        rs
+        success: rs.response?.includes('OK') ? true : false,
+        mes: rs.response?.includes('OK') ? 'Check your mail' : 'Something went wrong. Please try again'
     })
 })
 const resetPassword = asyncHandler(async (req, res) => {

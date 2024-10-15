@@ -13,7 +13,8 @@ module.exports = {
         main: '1220px'
       },
       backgroundColor: {
-        main: '#ee3131'
+        main: '#ee3131',
+        overlay: 'rgba(0,0,0,0.7)'
       },
       colors: {
         main: '#ee3131'
@@ -43,11 +44,21 @@ module.exports = {
           '100%': {
             transform: 'translateY(0px)',
           }
+        },
+        'scale-up-center': {
+          '0%': {
+                    transform: 'scale(0.5)',
+          },
+          '100%': {
+                    transform: 'scale(1)'
+          }
         }
+        
       },
       animation: {
         'slide-top': 'slide-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940)',
         'slide-top-sm': 'slide-top 0.15s linear',
+        'scale-up-center': 'scale-up-center 0.5s cubic-bezier(0.390, 0.575, 0.565, 1.000) both'
       }
     }
   },
