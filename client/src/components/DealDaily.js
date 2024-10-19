@@ -93,7 +93,9 @@ const DealDaily = () => {
                     <span className='line-clamp-1 text-center'>{dealdaily.title}</span>
 
                     {/* Đánh giá sao */}
-                    <span className='flex h-4'>{renderStartFromNumber(dealdaily?.totalRatings, 20)}</span>
+                    <span className='flex h-4'>{renderStartFromNumber(dealdaily?.totalRatings, 20)?.map((el, index) => (
+                    <span key={index}>{el}</span>
+                    ))}</span>
 
                     {/* Giá sản phẩm */}
                     <span>{`${formatMoney(dealdaily.price)} VNĐ`}</span>

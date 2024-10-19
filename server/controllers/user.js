@@ -6,6 +6,7 @@ const sendMail = require('../ultils/sendMail');
 const crypto = require('crypto');
 const makeToken = require('uniqid');
 const bcrypt = require('bcrypt');
+const { response } = require('express');
 
 const register = asyncHandler(async (req, res) => {
     const { email, password, firstname, lastname, mobile } = req.body;
@@ -26,48 +27,48 @@ const register = asyncHandler(async (req, res) => {
             mes: 'User already exists'
         });
     }
-
+    else{
     // Tạo token cho người dùng
     const token = makeToken();
-
-    // Thiết lập cookie
-    res.cookie('dataregister', { email, firstname, lastname, mobile, password, token }, {
-        httpOnly: true,
-        maxAge: 15 * 60 * 1000 // 15 phút
-    });
-
-    // Gửi email cho người dùng
-    const html = `Xin vui lòng click vào link dưới đây để hoàn tất quá trình đăng ký. Link này sẽ hết hạn sau 15 phút kể từ bây giờ. 
-        <a href=${process.env.URL_SERVER}/api/user/finalregister/${token}>Click here</a>`;
-    await sendMail({ email, html, subject: 'Hoàn tất đăng ký PaulShop' });
-
-    return res.json({
-        success: true,
-        mes: 'Please check your mail to activate your account'
-    });
-});
-
-const finalregister = asyncHandler(async (req, res) => {
-    const cookie = req.cookies;
-    const { token } = req.params;
-
-    if (!cookie || !cookie.dataregister || cookie.dataregister?.token !== token) {
-        res.clearCookie('dataregister')
-        return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
-     
-    }
-    const hashedPassword = await bcrypt.hash(cookie.dataregister.password, 10);
-
+    const emailedited = btoa(email)+'@'+token
     const newUser = await User.create({
-        email: cookie?.dataregister?.email,
-        password: cookie?.dataregister?.password, // Sử dụng mật khẩu đã mã hóa
-        mobile: cookie?.dataregister?.mobile,
-        firstname: cookie?.dataregister?.firstname,
-        lastname: cookie?.dataregister?.lastname,
+       email: emailedited, password, firstname, lastname, mobile
+    })
+    // Gửi email cho người dùng
+    if(newUser) {
+        const html = `<h2>Register code:</h2><br /><blockquote>${token}</blockquote>`;
+    await sendMail({ email, html, subject: 'Confirm register account in Paulshop' });
+    }
+    setTimeout(async() => {
+        await User.deleteOne({email: emailedited})
+    }, [20000])
+    return res.json({
+        success: newUser ? true : false,
+        mes: newUser ? 'Please check your mail to activate your account' : 'Something went wrong, please try again'
+    });}
+});
+const finalregister = asyncHandler(async (req, res) => {
+    // const cookie = req.cookies;
+    const { token } = req.params;
+    const notActivedEmail = await User.findOne({email: new RegExp(`${token}$`)})
+    if(notActivedEmail){
+        notActivedEmail.email= atob(notActivedEmail?.email?.split('@')[0])
+        notActivedEmail.save()
+    }
+    return res.json({
+        success: notActivedEmail ? true : false,
+        mes: notActivedEmail ? 'Register is successfully. Please go login' : 'Something went wrong, please try again'
     });
-    res.clearCookie('dataregister')
-    if (newUser) return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`);
-    else return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
+    // const newUser = await User.create({
+    //     email: cookie?.dataregister?.email,
+    //     password: cookie?.dataregister?.password, // Sử dụng mật khẩu đã mã hóa
+    //     mobile: cookie?.dataregister?.mobile,
+    //     firstname: cookie?.dataregister?.firstname,
+    //     lastname: cookie?.dataregister?.lastname,
+    // });
+    // res.clearCookie('dataregister')
+    // if (newUser) return res.redirect(`${process.env.CLIENT_URL}/finalregister/success`);
+    // else return res.redirect(`${process.env.CLIENT_URL}/finalregister/failed`);
 });
 // Refresh token => Cấp mới access token
 // Access token => Xác thực người dùng, quân quyên người dùng
@@ -182,7 +183,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     })
 })
 const getUsers = asyncHandler(async (req, res) => {
-    const response = await User.find().select('-refreshToken -password -role')
+    const response = await User.find().select('-refreshToken -password -role')  
     return res.status(200).json({
         success: response ? true : false,
         users: response
@@ -271,6 +272,4 @@ module.exports = {
     updateUserAddress,
     updateCart,
     finalregister,
-
-
 }
