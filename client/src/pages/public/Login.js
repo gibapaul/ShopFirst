@@ -2,12 +2,13 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { InputField, Button } from '../../components';
 import { apiRegister, apiLogin, apiForgotPassword, apiFinalRegister } from '../../apis/user';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import path from '../../ultils/path';
 import { login } from '../../store/user/userSlice';
 import { useDispatch } from 'react-redux';
 import { toast, ToastContainer } from 'react-toastify';
 import { validate } from '../../ultils/helpers';
+import { getCurrent } from '../../store/user/asyncAction'; // Import getCurrent
 
 const Login = () => {
     const navigate = useNavigate();
@@ -26,6 +27,7 @@ const Login = () => {
     const [token, setToken] = useState('');
     const [email, setEmail] = useState('');
 
+    // Reset payload when switching between modes
     const resetPayload = () => {
         setPayload({
             email: '',
@@ -36,15 +38,17 @@ const Login = () => {
         });
     };
 
+    // Handle forgot password logic
     const handleForgotPassword = async () => {
         const response = await apiForgotPassword({ email });
         if (response.success) {
-            toast.success("Email khôi phục đã được gửi. Hãy check mail!", { theme: 'colored' });
+            toast.success("Email khôi phục đã được gửi. Hãy kiểm tra email của bạn!", { theme: 'colored' });
         } else {
             toast.error(response.message || "Có lỗi xảy ra!", { theme: 'colored' });
         }
     };
 
+    // Reset payload when register state changes
     useEffect(() => {
         resetPayload();
     }, [isRegister]);
@@ -52,6 +56,7 @@ const Login = () => {
     const handleSubmit = useCallback(async () => {
         const { firstname, lastname, mobile, ...data } = payload;
         const invalids = isRegister ? validate(payload, setInvalidFields) : validate(data, setInvalidFields);
+        
         if (invalids === 0) {
             if (isRegister) {
                 const response = await apiRegister(payload);
@@ -67,8 +72,10 @@ const Login = () => {
             } else {
                 const rs = await apiLogin(data);
                 if (rs?.success) {
-                    dispatch(login({ isLoggedIn: true, token: rs.accessToken, userData: rs.userData }));
+                    dispatch(login({ isLoggedIn: true, token: rs.accessToken })); // Cập nhật trạng thái đăng nhập
+                    dispatch(getCurrent()); // Gọi getCurrent() để lấy thông tin người dùng
                     navigate(`/${path.HOME}`);
+                    
                     toast.success("Đăng nhập thành công!", { theme: 'colored' });
                 } else {
                     const errorMessage = rs.message || 'Something went wrong!';
@@ -99,7 +106,7 @@ const Login = () => {
                 text: response.message || 'Something went wrong!',
                 icon: 'error'
             });
-            setIsVerifieldEmail(false); // Đảm bảo không dùng flase
+            setIsVerifieldEmail(false);
             setToken('');
         }
     };
@@ -229,6 +236,7 @@ const Login = () => {
                             </span>
                         )}
                     </div>
+                    <Link className='text-blue-500 text-sm hover:underline cursor-pointer' to={`/${path.HOME}`}>Go home</Link>
                 </div>
             </div>
             <ToastContainer />

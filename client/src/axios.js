@@ -6,6 +6,13 @@ const instance = axios.create({
 // Thêm một bộ đón chặn request
 instance.interceptors.request.use(function (config) {
     // Làm gì đó trước khi request dược gửi đi
+  let cocalStoregeData = window.localStorage.getItem('persist:shop/user')
+  if(cocalStoregeData&& typeof cocalStoregeData === 'string') {
+    cocalStoregeData = JSON.parse(cocalStoregeData)
+    const accessToken = JSON.parse(cocalStoregeData?.token)
+    config.headers = {Authorization: `Bearer ${accessToken}`}
+    return config
+  }else
     return config;
   }, function (error) {
     // Làm gì đó với lỗi request

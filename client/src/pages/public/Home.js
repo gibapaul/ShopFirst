@@ -1,8 +1,7 @@
 import { Sidebar, Banner, BestSeller, DealDaily, FeatureProducts, CustomSlider } from '../../components';
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getCategories } from '../../store/app/asyncActions'; // Đảm bảo đúng tên file
-import icons from '../../ultils/icons';
+import { getCategories } from '../../store/app/asyncActions';
 import { IoIosArrowForward } from 'react-icons/io';
 
 const Home = () => {
@@ -16,7 +15,7 @@ const Home = () => {
 
     return (
         <>
-            <div className='w-main flex'>
+            <div className='w-main flex mt-6'>
                 <div className='flex flex-col gap-5 w-[25%] flex-auto'>
                     <Sidebar />
                     <DealDaily />
