@@ -41,7 +41,7 @@ const register = asyncHandler(async (req, res) => {
     }
     setTimeout(async() => {
         await User.deleteOne({email: emailedited})
-    }, [20000])
+    }, [300000])
     return res.json({
         success: newUser ? true : false,
         mes: newUser ? 'Please check your mail to activate your account' : 'Something went wrong, please try again'

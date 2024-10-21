@@ -14,7 +14,7 @@ const {
     BsFillSuitHeartFill,
     AiOutlineMenu,
 } = icons
-const Product = ({ productData, isNew }) => {
+const Product = ({ productData, isNew, normal }) => {
     const [isShowOption, setIsShowOption] = useState(false)
 
     return (
@@ -49,11 +49,11 @@ const Product = ({ productData, isNew }) => {
                     />
                     
                     {/* Nhãn New/Hot */}
-                    <img
+                    {!normal && <img
                         src={isNew ? labelGreen : label}
                         alt=''
                         className='absolute w-[75px] top-[-18px] left-[-40px] object-contain'
-                    />
+                    />}
                     
                     {/* Text New/Hot */}
                     <span className='font-bold top-[-15px] left-[-18px] absolute text-white'>

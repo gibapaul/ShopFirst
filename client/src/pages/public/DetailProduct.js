@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiGetProduct } from '../../apis';
-import { Breadcrumb, Button, SelectQuantity} from '../../components';
+import { apiGetProduct, apiGetProducts } from '../../apis';
+import { Breadcrumb, Button, SelectQuantity, ProductExtraInfoItem, ProductInfomation, CustomSlider } from '../../components';
 import Slider from "react-slick";
 import ReactImageMagnify from 'react-image-magnify';
 import { formatPrice, formatMoney, renderStartFromNumber } from '../../ultils/helpers';
+import { ProductExtraInfomation } from '../../ultils/contants';
 
 const settings = {
     dots: false,
@@ -17,27 +18,40 @@ const settings = {
 const DetailProduct = () => {
     const { pid, title, category } = useParams();
     const [product, setProduct] = useState(null);
-    const [quantity, setQuantity] = useState(1)
+    const [quantity, setQuantity] = useState(1);
+    const [relatedProducts, setRelatedProducts] = useState(null);
+
     const fetchProductData = async () => {
         const response = await apiGetProduct(pid);
         if (response.success) setProduct(response.productData);
     };
 
+    const fetchProducts = async () => {
+        const response = await apiGetProducts({ category });
+        if (response.success) setRelatedProducts(response.products);
+    };
+
     useEffect(() => {
-        if (pid) fetchProductData();
+        if (pid) {
+            fetchProductData();
+            fetchProducts();
+        }
     }, [pid]);
 
     const handleQuantity = useCallback((number) => { 
-        if(!Number(number) || Number(number)<1) {
-            return
-            }else
-            setQuantity(number)
-    }, [quantity])
-    const handleChangeQuantity = useCallback ((flag) => {
-        if(flag === 'minus' && quantity === 1) return
-        if(flag === 'minus') setQuantity (prev => +prev - 1)
-        if(flag === 'plus') setQuantity (prev => +prev + 1)
-    }, [quantity])
+        if (!Number(number) || Number(number) < 1) {
+            return;
+        } else {
+            setQuantity(number);
+        }
+    }, []); 
+
+    const handleChangeQuantity = useCallback((flag) => {
+        if (flag === 'minus' && quantity === 1) return;
+        if (flag === 'minus') setQuantity(prev => +prev - 1);
+        if (flag === 'plus') setQuantity(prev => +prev + 1);
+    }, [quantity]); 
+
     return (
         <div className='w-full'>
             <div className='h-[81px] flex bg-gray-100 justify-center items-center'>
@@ -78,15 +92,13 @@ const DetailProduct = () => {
                 </div>
                 <div className='w-2/5 pr-[24px] flex-col flex gap-4'>
                     <div className='flex items-center justify-between'>
-                    <h2 className='text-[30px] font-semibold'>
-                        {`${formatMoney(formatPrice(product?.price))} VNĐ`}
-                    </h2>
-                    <span className='text-sm text-main'>{`Kho: ${product?.quantity}`}</span>
+                        <h2 className='text-[30px] font-semibold'>
+                            {`${formatMoney(formatPrice(product?.price))} VNĐ`}
+                        </h2>
+                        <span className='text-sm text-main'>{`Kho: ${product?.quantity}`}</span>
                     </div>
                     <div className='flex items-center gap-1'>
-                        {product?.totalRatings ? renderStartFromNumber(product.totalRatings)?.map((el, index) => (
-                            <span key={index}>{el}</span>
-                        )) : null}
+                        {renderStartFromNumber(product?.totalRatings)?.map((el, index) => (<span key={index}>{el}</span>))}
                         <span className='text-sm text-main italic'>{`(Đã bán: ${product?.sold})`}</span>
                     </div>
                     <ul className='list-square text-sm text-gray-500 pl-4'>
@@ -95,19 +107,40 @@ const DetailProduct = () => {
                         ))}
                     </ul>
                     <div className='flex flex-col gap-8'>
-                        <SelectQuantity
-                         quantity={quantity}
-                          handleQuantity={handleQuantity}
-                          handleChangeQuantity={handleChangeQuantity}
-                          />
+                        <div className='flex items-center gap-4'>
+                            <span className='font-semibold'>Quantity</span>
+                            <SelectQuantity
+                                quantity={quantity}
+                                handleQuantity={handleQuantity}
+                                handleChangeQuantity={handleChangeQuantity}
+                            />
+                        </div>
                         <Button fw>
                             Add to cart
                         </Button>
                     </div>
                 </div>
-                <div className='flex-2 border-green-300 border w-1/5'>i4</div>
+                <div className='w-1/5'>
+                    {ProductExtraInfomation.map(el => (
+                        <ProductExtraInfoItem
+                            key={el.id}
+                            title={el.title}
+                            icon={el.icon}
+                            sub={el.sub}
+                        />
+                    ))}
+                </div>
             </div>
-            <div className='h-[500px] w-full'></div>
+            <div className='w-main m-auto mt-8'>
+                <ProductInfomation />
+            </div>
+            <div className='w-main m-auto mt-8'>
+                <h3 className="text-[20px] font-semibold py-[15px] border-b-2 border-main">
+                    OTHER CUSTOMER ALSO LIKED
+                </h3>
+                <CustomSlider normal={true} products={relatedProducts} />
+            </div>
+            <div className='h-[100px] w-full'></div>
         </div>
     );
 };
