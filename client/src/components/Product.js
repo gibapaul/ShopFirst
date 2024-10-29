@@ -6,7 +6,6 @@ import { renderStartFromNumber } from '../ultils/helpers'
 import SelectOption from './SelectOption'
 import icons from '../ultils/icons'
 import { Link } from 'react-router-dom'
-import path from '../ultils/path'
 
 
 const {

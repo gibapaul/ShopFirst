@@ -7,8 +7,15 @@ export const appSlice = createSlice({
         categories: [], // Danh mục sản phẩm
         isLoading: false, // Trạng thái loading
         errorMessage: null, // Thông báo lỗi nếu có
+        isShowModel: false,
+        modelChildren: null 
     },
-    reducers: {},
+    reducers: {
+        showModel: (state, action) => {
+            state.isShowModel = action.payload.isShowModel;
+            state.modelChildren = action.payload.modelChildren;
+        }
+    },
     extraReducers: (builder) => {
         builder.addCase(actions.getCategories.pending, (state) => {
             state.isLoading = true;
@@ -25,5 +32,7 @@ export const appSlice = createSlice({
         });
     }
 });
+
+export const { showModel } = appSlice.actions;
 
 export default appSlice.reducer;

@@ -53,7 +53,25 @@ const Login = () => {
         resetPayload();
     }, [isRegister]);
 
+    // Validate input fields
+    const validateInput = () => {
+        const errors = [];
+        if (!payload.email.includes('@')) {
+            errors.push('Email không hợp lệ');
+        }
+        if (payload.password.length < 6) {
+            errors.push('Mật khẩu phải có ít nhất 6 ký tự');
+        }
+        return errors;
+    };
+
     const handleSubmit = useCallback(async () => {
+        const validationErrors = validateInput();
+        if (validationErrors.length) {
+            toast.error(validationErrors.join('. '), { theme: 'colored' });
+            return;
+        }
+
         const { firstname, lastname, mobile, ...data } = payload;
         const invalids = isRegister ? validate(payload, setInvalidFields) : validate(data, setInvalidFields);
         
@@ -75,7 +93,6 @@ const Login = () => {
                     dispatch(login({ isLoggedIn: true, token: rs.accessToken })); // Cập nhật trạng thái đăng nhập
                     dispatch(getCurrent()); // Gọi getCurrent() để lấy thông tin người dùng
                     navigate(`/${path.HOME}`);
-                    
                     toast.success("Đăng nhập thành công!", { theme: 'colored' });
                 } else {
                     const errorMessage = rs.message || 'Something went wrong!';
@@ -209,10 +226,10 @@ const Login = () => {
                         setInvalidFields={setInvalidFields}
                     />
                     <Button
-                        name={isRegister ? 'Register' : 'Login'}
                         handleOnclick={handleSubmit}
                         fw
-                    />
+                    > {isRegister ? 'Register' : 'Login'}
+                    </Button>
                     <div className='flex items-center justify-between my-2 w-full text-sm'>
                         {!isRegister && (
                             <span
@@ -236,7 +253,6 @@ const Login = () => {
                             </span>
                         )}
                     </div>
-                    <Link className='text-blue-500 text-sm hover:underline cursor-pointer' to={`/${path.HOME}`}>Go home</Link>
                 </div>
             </div>
             <ToastContainer />

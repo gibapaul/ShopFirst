@@ -2,6 +2,7 @@ const { query, response } = require('express')
 const Product = require('../models/product')
 const asyncHandler = require('express-async-handler')
 const slugify = require('slugify')
+const { restart } = require('nodemon')
 
 const createProduct = asyncHandler(async (req, res) => {
     if (Object.keys(req.body).length === 0) throw new Error('Missing inputs')
@@ -23,46 +24,63 @@ const getProduct = asyncHandler(async (req, res) => {
 // Filtering, sorting & pagination
 const getProducts = asyncHandler(async (req, res) => {
     const queries = { ...req.query };
-    
+
     // Tách các trường đặc biệt ra khỏi query
     const excludeFiles = ['limit', 'sort', 'page', 'fields'];
     excludeFiles.forEach(el => delete queries[el]);
 
+    // Chuyển đổi giá trị price sang số nếu có
+    if (queries.price) {
+        if (queries.price['$gte']) {
+            queries.price['$gte'] = Number(queries.price['$gte']); // Chuyển đổi sang số
+        }
+        if (queries.price['$lte']) {
+            queries.price['$lte'] = Number(queries.price['$lte']); // Chuyển đổi sang số
+        }
+    }
+
     // Chuyển đổi đối tượng queries thành chuỗi JSON và thay thế các toán tử
-    let queryString = JSON.stringify(queries)
+    let queryString = JSON.stringify(queries);
     queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g, matchedEl => `$${matchedEl}`);
     const formatedQueries = JSON.parse(queryString);
-    console.log(formatedQueries)
     
+    // Các phần khác của mã không thay đổi
+    let colorQueryObject = {};
+
     // Filtering
     if (queries?.title) formatedQueries.title = { $regex: queries.title, $options: 'i' };
-    if (queries?.category) formatedQueries.category = { $regex: queries.category, $options: 'i'};
-    let queryCommand = Product.find(formatedQueries);
+    if (queries?.category) formatedQueries.category = { $regex: queries.category, $options: 'i' };
+    if (queries?.color) {
+        delete formatedQueries.color;
+        const colorArr = queries.color?.split(',');
+        const colorQuery = colorArr.map(el => ({ color: { $regex: el, $options: 'i' } }));
+        colorQueryObject = { $or: colorQuery };
+    }
+    const q = { ...colorQueryObject, ...formatedQueries };
+    let queryCommand = Product.find(q);
 
-    //Sorting
-    if(req.query.sort) {
-        const sortBy = req.query.sort.split(',').join(' ')
-        queryCommand = queryCommand.sort(sortBy)
+    // Sorting
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        queryCommand = queryCommand.sort(sortBy);
     }
 
-    //Fields limiting
-    if(req.query.fields) {
-        const fields = req.query.fields.split(',').join('')
-        queryCommand = queryCommand.select(fields)
-        
+    // Fields limiting
+    if (req.query.fields) {
+        const fields = req.query.fields.split(',').join(' ');
+        queryCommand = queryCommand.select(fields);
     }
-    //Pagination
-    //Limit: Số object: lấy về 1 gọi API
-    //Skip: 
-    const page = +req.query.page || 1 
-    const limit = +req.query.limit || process.env.LIMIT_PRODUCTS
-    const skip = (page - 1) * limit
-    queryCommand.skip(skip).limit(limit)
-    // Excute query
-    // Số lượng san phẩm thỏa mãn điều kiện !== số lượng sp trả về 1 lần gọi API
+
+    // Pagination
+    const page = +req.query.page || 1;
+    const limit = +req.query.limit || process.env.LIMIT_PRODUCTS;
+    const skip = (page - 1) * limit;
+    queryCommand.skip(skip).limit(limit);
+
+    // Execute query
     try {
         const response = await queryCommand; // Truy vấn dữ liệu
-        const counts = await Product.countDocuments(formatedQueries); // Đếm số lượng sản phẩm
+        const counts = await Product.countDocuments(q); // Đếm số lượng sản phẩm
 
         return res.status(200).json({
             success: response ? true : false,
@@ -76,6 +94,7 @@ const getProducts = asyncHandler(async (req, res) => {
         });
     }
 });
+
 const updateProduct = asyncHandler(async (req, res) => {
     const { pid } = req.params
     if (req.body && req.body.title) req.body.slug = slugify(req.body.title)

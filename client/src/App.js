@@ -3,19 +3,22 @@ import { Route, Routes } from 'react-router-dom';
 import { Login, Home, Public, FAQ, Services, DetailProduct, Blogs, Products, FinalRegister, ResetPassword } from './pages/public';
 import path from './ultils/path';
 import { getCategories } from './store/app/asyncActions';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {Model} from './components'
+
 
 function App() {
   const dispatch = useDispatch();
-
+  const {isShowModel, modelChildren} = useSelector(state => state.app)
   useEffect(() => {
     dispatch(getCategories());
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen font-main">
+    <div className="font-main relative">
+      {isShowModel && <Model>{modelChildren}</Model>}
       <Routes>
         <Route path={path.PUBLIC} element={<Public />}>
           <Route path={path.HOME} element={<Home />} />
