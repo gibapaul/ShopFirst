@@ -14,13 +14,24 @@ const createProduct = asyncHandler(async (req, res) => {
     })
 })
 const getProduct = asyncHandler(async (req, res) => {
-    const { pid } = req.params
-    const product = await Product.findById(pid)
+    const { pid } = req.params;
+    const product = await Product.findById(pid).populate({
+        path: 'ratings',
+        populate: {
+            path: 'postedBy',
+            select: 'firstname lastname avatar'
+        }
+    });
+    
+    console.log('Product data:', product); // Kiểm tra dữ liệu sản phẩm
+
     return res.status(200).json({
         success: product ? true : false,
         productData: product ? product : 'Cannot get product'
-    })
-})
+    });
+});
+
+
 // Filtering, sorting & pagination
 const getProducts = asyncHandler(async (req, res) => {
     const queries = { ...req.query };
@@ -114,7 +125,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 })
 const ratings = asyncHandler(async(req, res) => {
     const {_id} = req.user
-    const {star, comment, pid} = req.body
+    const {star, comment, pid, updatedAt} = req.body
     if(!star || !pid) throw new Error('Missing inputs') 
     const ratingProduct = await Product.findById(pid)
     const alreadyRating = ratingProduct?.ratings?.find(el => el.postedBy.toString() ===_id)
@@ -124,12 +135,12 @@ const ratings = asyncHandler(async(req, res) => {
         await Product.updateOne({
             ratings: { $elemMatch: alreadyRating}
         }, {
-            $set: { "ratings.$.star": star, "ratings.$.comment": comment}
+            $set: { "ratings.$.star": star, "ratings.$.comment": comment, "ratings.$.updatedAt": updatedAt}
         }, {new: true})
     }else{
         //Add star and comment
         await Product.findByIdAndUpdate(pid,{
-            $push: {ratings: {star, comment, postedBy:_id}}
+            $push: {ratings: {star, comment, postedBy:_id, updatedAt}}
         }, {new: true})
         console.log(response)
     }

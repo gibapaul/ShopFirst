@@ -13,10 +13,12 @@ const TopHeader = () => {
   const { isLoggedIn, current } = useSelector(state => state.user);
 
   useEffect(() => {
-    // Gọi API để lấy thông tin người dùng nếu đã đăng nhập
-    if (isLoggedIn) {
-      dispatch(getCurrent());
-    }
+    const setTimeoutId = setTimeout(() => {
+      if(isLoggedIn) dispatch(getCurrent())
+    }, 300);
+  return () => {
+    clearTimeout(setTimeoutId)
+  }
   }, [dispatch, isLoggedIn]);
 
   return (

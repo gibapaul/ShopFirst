@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo} from 'react';
 import { useDispatch } from 'react-redux';
 import { showModel } from '../store/app/appSlice';
 
@@ -15,4 +15,4 @@ const Model = ({ children }) => {
     );
 };
 
-export default Model;
+export default memo(Model);
