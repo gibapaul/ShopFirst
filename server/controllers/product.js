@@ -50,6 +50,7 @@ const getProducts = asyncHandler(async (req, res) => {
         }
     }
 
+    
     // Chuyển đổi đối tượng queries thành chuỗi JSON và thay thế các toán tử
     let queryString = JSON.stringify(queries);
     queryString = queryString.replace(/\b(gte|gt|lt|lte)\b/g, matchedEl => `$${matchedEl}`);
